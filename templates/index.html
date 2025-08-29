@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🤖 Voice AI Assistant</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <!-- Sidebar Toggle -->
+  <button class="toggle-btn" onclick="toggleSidebar()">⚙️</button>
+
+  <!-- Sidebar -->
+  <div class="sidebar hidden" id="sidebar">
+    <h2>API Configuration</h2>
+    <label>Weather API Key:</label>
+    <input id="weatherKey" type="password">
+    <label>Murf API Key:</label>
+    <input id="murfKey" type="password">
+    <label>AssemblyAI API Key:</label>
+    <input id="assemblyKey" type="password">
+    <label>Groq API Key:</label>
+    <input id="groqKey" type="password">
+    <button onclick="saveKeys()">💾 Save Keys</button>
+  </div>
+
+  <!-- Chat Container -->
+  <div class="chat-container">
+    <h1><span class="ai-name">Aurelius</span> — Your Brain AI</h1>
+    
+    <div class="chat-box" id="chatBox">
+      <div class="message bot">
+        <div class="bubble">👋 Hello! I’m ready to chat.</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="recordBtn">🎤 Record</button>
+      <audio id="audioPlayer" controls></audio>
+      <button id="downloadBtn" disabled>⬇️ Download</button>
+    </div>
+  </div>
+
+  <script>
+    let ws;
+    let audioChunks = [];
+    let audioPlayer = document.getElementById("audioPlayer");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const chatBox = document.getElementById("chatBox");
+    const recordBtn = document.getElementById("recordBtn");
+
+    function connectWS() {
+      ws = new WebSocket(`ws://${window.location.host}/ws`);
+      ws.onopen = () => console.log("✅ WebSocket connected");
+
+      ws.onmessage = (event) => {
+        let msg = JSON.parse(event.data);
+
+        if (msg.type === "transcript") {
+          addMessage("user", msg.data);
+        } 
+        else if (msg.type === "llm_reply") {
+          addMessage("bot", msg.data);
+        } 
+        else if (msg.type === "history") {
+          chatBox.innerHTML = "";
+          msg.data.forEach(turn => {
+            addMessage("user", turn.user);
+            addMessage("bot", turn.bot);
+          });
+        }
+        else if (msg.type === "audio") {
+          let byteCharacters = atob(msg.data);
+          let byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          let byteArray = new Uint8Array(byteNumbers);
+          audioChunks.push(byteArray);
+          console.log(`🎵 Audio chunk received (${byteArray.length} bytes)`);
+        }
+        else if (msg.type === "audio_end") {
+          console.log("⏱️ No new chunks, finalizing audio...");
+          finalizeAudio();
+        }
+        else if (msg.type === "audio_file") {
+          console.log("💾 Saved file available:", msg.url);
+          const savedAudio = new Audio(msg.url);
+          savedAudio.play()
+            .then(() => console.log("▶️ Playing saved reply"))
+            .catch(err => console.error("⚠️ Playback failed:", err));
+        }
+        else if (msg.type === "error") {
+          console.error("❌ Error:", msg.message);
+        }
+      };
+
+      ws.onclose = () => console.log("🔒 WebSocket closed");
+    }
+
+    function finalizeAudio() {
+      if (audioChunks.length === 0) {
+        console.error("❌ No audio chunks collected!");
+        return;
+      }
+      const audioBlob = new Blob(audioChunks, { type: "audio/mpeg" });
+      console.log(`📦 Final audio blob size: ${(audioBlob.size / 1024).toFixed(2)} KB`);
+
+      const audioUrl = URL.createObjectURL(audioBlob);
+      audioPlayer.src = audioUrl;
+      audioPlayer.play()
+        .then(() => console.log("▶️ Playing streamed response"))
+        .catch(err => console.error("⚠️ Playback failed:", err));
+
+      downloadBtn.disabled = false;
+      downloadBtn.onclick = () => {
+        const a = document.createElement("a");
+        a.href = audioUrl;
+        a.download = "streamed_reply.mp3";
+        a.click();
+      };
+
+      audioChunks = [];
+    }
+
+    function addMessage(sender, text) {
+      const msgDiv = document.createElement("div");
+      msgDiv.className = `message ${sender}`;
+      msgDiv.innerHTML = `<div class="bubble">${text}</div>`;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight; // auto scroll
+    }
+
+    connectWS();
+
+    // 🎤 Record & Upload
+    let mediaRecorder;
+    let chunks = [];
+
+    recordBtn.addEventListener("click", async () => {
+      if (!mediaRecorder || mediaRecorder.state === "inactive") {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        chunks = [];
+
+        mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+        mediaRecorder.onstop = async () => {
+          const blob = new Blob(chunks, { type: "audio/webm" });
+          const formData = new FormData();
+          formData.append("file", blob, "query.webm");
+          formData.append("voiceId", "en-US-amara");
+
+          await fetch("/llm/query", { method: "POST", body: formData });
+        };
+
+        mediaRecorder.start();
+        recordBtn.textContent = "⏹ Stop Recording";
+      } else {
+        mediaRecorder.stop();
+        recordBtn.textContent = "🎤 Record";
+      }
+    });
+
+    // 🔑 Save keys to backend + localStorage
+    function saveKeys() {
+      const keys = {
+        WEATHER_API_KEY: document.getElementById("weatherKey").value,
+        MURF_API_KEY: document.getElementById("murfKey").value,
+        ASSEMBLYAI_API_KEY: document.getElementById("assemblyKey").value,
+        GROQ_API_KEY: document.getElementById("groqKey").value,
+      };
+      localStorage.setItem("apiKeys", JSON.stringify(keys));
+      fetch("/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(keys),
+      }).then(r => console.log("✅ Keys sent to backend"));
+    }
+
+    // Load saved keys
+    window.onload = () => {
+      const saved = JSON.parse(localStorage.getItem("apiKeys") || "{}");
+      if (saved) {
+        document.getElementById("weatherKey").value = saved.WEATHER_API_KEY || "";
+        document.getElementById("murfKey").value = saved.MURF_API_KEY || "";
+        document.getElementById("assemblyKey").value = saved.ASSEMBLYAI_API_KEY || "";
+        document.getElementById("groqKey").value = saved.GROQ_API_KEY || "";
+        if (Object.keys(saved).length) saveKeys();
+      }
+    };
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("hidden");
+    }
+  </script>
+</body>
+</html>
