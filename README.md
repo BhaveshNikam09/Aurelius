@@ -1,52 +1,105 @@
+# Aurelius
 
-# Aurelius - AI Voice Agent
+**AI Voice Agent** — a real-time conversational agent that listens, thinks, and speaks back.
 
-Aurelius is an AI-powered voice agent designed to interact naturally with users, perform tasks, and provide intelligent responses. The agent integrates seamlessly with various systems, offering a personalized and dynamic user experience.
+![Status](https://img.shields.io/badge/status-active-success)
+![Python](https://img.shields.io/badge/python-3.7%2B-blue)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
+
+---
+
+## Overview
+
+Aurelius is an AI-powered voice agent that interacts naturally with users, performs tasks, and provides intelligent responses in real time. It pipes live voice input through speech-to-text, an LLM for reasoning, and text-to-speech for a natural spoken reply — all wrapped in a modern, chat-style interface.
+
+## Tech Stack
+
+- **Backend:** FastAPI, Async Python, WebSockets
+- **Speech-to-Text:** AssemblyAI
+- **LLM Reasoning:** Gemini / Groq
+- **Text-to-Speech:** Murf AI
+- **Frontend:** HTML, CSS, JavaScript
+
+## Architecture
+
+```
+User Voice
+    │
+    ▼
+Speech-to-Text (AssemblyAI)
+    │
+    ▼
+LLM Reasoning (Gemini / Groq)
+    │
+    ▼
+Text-to-Speech (Murf AI)
+    │
+    ▼
+Audio Response ──► User
+```
+
+The FastAPI backend coordinates each stage over WebSockets, streaming audio in and responses back out with minimal latency, so the conversation feels continuous rather than turn-based.
 
 ## Features
-- **Smarter UI**: Aurelius now has a sleek and modern chat-style interface, making interactions smoother and more intuitive.
-- **Dynamic Sidebar**: Includes options for managing API keys and other configurations.
-- **Conversation Logging**: Tracks the history of interactions for better user insights and troubleshooting.
-- **Task Handling**: The voice agent can perform tasks and respond to queries in real-time.
-- **Multi-Platform Support**: Easily deployable across various platforms.
+
+- **Smarter UI** — sleek, modern chat-style interface for smoother, more intuitive interactions
+- **Dynamic Sidebar** — manage API keys and configuration without touching code
+- **Conversation Logging** — full interaction history for insights and troubleshooting
+- **Real-Time Task Handling** — the agent performs tasks and answers queries live
+- **Multi-Platform Support** — deployable across various platforms
+
+## Prerequisites
+
+- Python 3.7+
+- API keys for AssemblyAI, Murf AI, and your chosen LLM provider (Gemini or Groq)
 
 ## Installation
 
-To get started with Aurelius, follow the instructions below to set up the project.
+**1. Clone the repository**
+```bash
+git clone https://github.com/BhaveshNikam09/Aurelius
+cd Aurelius
+```
 
-### Prerequisites
-- Python 3.7+
-- Required Python packages (listed in `requirements.txt`)
+**2. Install dependencies**
+```bash
+pip install -r requirements.txt
+```
 
-### Setup Instructions
+**3. Configure environment variables**
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/BhaveshNikam09/Aurelius
-   cd Aurelius
-   ```
+Create a `.env` file (or set system environment variables) with your API keys for AssemblyAI, Murf AI, and your LLM provider, plus any other service-specific settings.
 
-2. Install the required dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Configure the environment variables and API keys for the services you're using.
-
-4. Run the application:
-   ```bash
-   python app.py
-   ```
+**4. Run the application**
+```bash
+python app.py
+```
 
 ## Usage
 
-Once the application is running, interact with Aurelius via the modern chat-style UI. The agent can handle various commands, including task execution, answering questions, and more.
+Once running, interact with Aurelius through the chat-style UI:
 
-### Customization
-- Update the settings for API keys and configurations via the sidebar.
-- Modify the conversation flow in `conversation_flow.py`.
+- Speak naturally — Aurelius transcribes, reasons, and responds with synthesized speech
+- Use the sidebar to manage API keys and configuration
+- Review past interactions in the conversation log
 
+## Customization
+
+- Update API keys and configuration via the sidebar
+- Modify the conversation flow in `conversation_flow.py`
+- Swap LLM providers by changing the relevant environment variable / config entry
+
+## Roadmap Ideas
+
+- [ ] Add screenshots / demo GIF of the chat interface
+- [ ] Support additional TTS/STT providers
+- [ ] Add conversation memory across sessions
+- [ ] Deploy a hosted demo
 
 ## Contributing
 
-Feel free to fork this repository, submit issues, or create pull requests for any improvements 
+Feel free to fork this repository, submit issues, or open pull requests for improvements.
+
+## License
+
+MIT
