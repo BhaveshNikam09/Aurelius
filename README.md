@@ -16,8 +16,9 @@ Aurelius is an AI-powered voice agent that interacts naturally with users, perfo
 
 - **Backend:** FastAPI, Async Python, WebSockets
 - **Speech-to-Text:** AssemblyAI
-- **LLM Reasoning:** Gemini / Groq
+- **LLM Reasoning:** Groq
 - **Text-to-Speech:** Murf AI
+- **Weather Integration:** Weather API (for location/weather-aware queries)
 - **Frontend:** HTML, CSS, JavaScript
 
 ## Architecture
@@ -29,7 +30,7 @@ User Voice
 Speech-to-Text (AssemblyAI)
     │
     ▼
-LLM Reasoning (Gemini / Groq)
+LLM Reasoning (Groq)  ◄──► Weather API (optional, for weather/location queries)
     │
     ▼
 Text-to-Speech (Murf AI)
@@ -38,7 +39,7 @@ Text-to-Speech (Murf AI)
 Audio Response ──► User
 ```
 
-The FastAPI backend coordinates each stage over WebSockets, streaming audio in and responses back out with minimal latency, so the conversation feels continuous rather than turn-based.
+The FastAPI backend coordinates each stage over WebSockets, streaming audio in and responses back out with minimal latency, so the conversation feels continuous rather than turn-based. API keys for each service (Weather, Murf, AssemblyAI, Groq) are managed from the in-app configuration sidebar.
 
 ## Features
 
@@ -51,7 +52,11 @@ The FastAPI backend coordinates each stage over WebSockets, streaming audio in a
 ## Prerequisites
 
 - Python 3.7+
-- API keys for AssemblyAI, Murf AI, and your chosen LLM provider (Gemini or Groq)
+- API keys for:
+  - AssemblyAI (Speech-to-Text)
+  - Murf AI (Text-to-Speech)
+  - Groq (LLM)
+  - A Weather API provider (for weather-aware responses)
 
 ## Installation
 
@@ -66,9 +71,14 @@ cd Aurelius
 pip install -r requirements.txt
 ```
 
-**3. Configure environment variables**
+**3. Configure API keys**
 
-Create a `.env` file (or set system environment variables) with your API keys for AssemblyAI, Murf AI, and your LLM provider, plus any other service-specific settings.
+Set your API keys either via a `.env` file or directly in the app's **API Configuration** sidebar once it's running:
+
+- Weather API Key
+- Murf API Key
+- AssemblyAI API Key
+- Groq API Key
 
 **4. Run the application**
 ```bash
@@ -89,12 +99,14 @@ Once running, interact with Aurelius through the chat-style UI:
 - Modify the conversation flow in `conversation_flow.py`
 - Swap LLM providers by changing the relevant environment variable / config entry
 
-## Roadmap Ideas
+## Screenshots
 
-- [ ] Add screenshots / demo GIF of the chat interface
-- [ ] Support additional TTS/STT providers
-- [ ] Add conversation memory across sessions
-- [ ] Deploy a hosted demo
+**Chat interface**
+![Aurelius chat UI](./screenshots/chat-ui.png)
+
+**API configuration sidebar**
+![Aurelius config sidebar](./screenshots/config-sidebar.png)
+
 
 ## Contributing
 
