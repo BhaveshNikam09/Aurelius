@@ -56,8 +56,7 @@ The FastAPI backend coordinates each stage over WebSockets, streaming audio in a
   - AssemblyAI (Speech-to-Text)
   - Murf AI (Text-to-Speech)
   - Groq (LLM)
-  - A Weather API provider (for weather-aware responses)
-
+    
 ## Installation
 
 **1. Clone the repository**
