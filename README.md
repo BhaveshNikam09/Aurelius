@@ -101,10 +101,10 @@ Once running, interact with Aurelius through the chat-style UI:
 ## Screenshots
 
 **Chat interface**
-![Aurelius chat UI](./screenshots/chat-ui.png)
+![Aurelius chat UI](chat-ui.png)
 
 **API configuration sidebar**
-![Aurelius config sidebar](./screenshots/config-sidebar.png)
+![Aurelius config sidebar](config-sidebar.png)
 
 
 ## Contributing
